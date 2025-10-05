@@ -24,7 +24,6 @@ const validationSchema = Yup.object({
 const NoteForm = ({ onClose }: NoteFormProps) => {
   const queryClient = useQueryClient();
 
-  // Poprawne wywołanie useMutation z destrukturyzacją
   const mutation = useMutation<Omit<Note, 'id' | 'createdAt'>, Error, Omit<Note, 'id' | 'createdAt'>>({
     mutationFn: (values) => createNote(values),
     onSuccess: () => {
@@ -34,7 +33,7 @@ const NoteForm = ({ onClose }: NoteFormProps) => {
   });
 
   const { mutate, status } = mutation;
-  const isLoading = status === 'loading';
+  const isLoading = status === 'pending'; // <- POPRAWIONE
 
   const initialValues: NoteFormValues = { title: '', content: '', tag: 'Todo' };
 
