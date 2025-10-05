@@ -24,13 +24,17 @@ const validationSchema = Yup.object({
 const NoteForm = ({ onClose }: NoteFormProps) => {
   const queryClient = useQueryClient();
 
-  const { mutate, isLoading } = useMutation({
-    mutationFn: (values: Omit<Note, 'id' | 'createdAt'>) => createNote(values),
+  // Poprawne wywołanie useMutation z destrukturyzacją
+  const mutation = useMutation<Omit<Note, 'id' | 'createdAt'>, Error, Omit<Note, 'id' | 'createdAt'>>({
+    mutationFn: (values) => createNote(values),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
       onClose();
     },
   });
+
+  const { mutate, status } = mutation;
+  const isLoading = status === 'loading';
 
   const initialValues: NoteFormValues = { title: '', content: '', tag: 'Todo' };
 
