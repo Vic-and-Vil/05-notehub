@@ -16,18 +16,18 @@ interface NoteFormValues {
 }
 
 const validationSchema = Yup.object({
-  title: Yup.string().min(3).max(50).required('Required'),
-  content: Yup.string().max(500),
+  title: Yup.string().min(3, 'Too short').max(50, 'Too long').required('Required'),
+  content: Yup.string().max(500, 'Too long'),
   tag: Yup.mixed<Note['tag']>().oneOf(['Todo', 'Work', 'Personal', 'Meeting', 'Shopping']).required('Required'),
 });
 
 const NoteForm = ({ onClose }: NoteFormProps) => {
   const queryClient = useQueryClient();
 
-  const mutation = useMutation({
+  const { mutate, isLoading } = useMutation({
     mutationFn: (values: Omit<Note, 'id' | 'createdAt'>) => createNote(values),
     onSuccess: () => {
-      queryClient.invalidateQueries(['notes']);
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
       onClose();
     },
   });
@@ -38,7 +38,7 @@ const NoteForm = ({ onClose }: NoteFormProps) => {
     <Formik
       initialValues={initialValues}
       validationSchema={validationSchema}
-      onSubmit={(values) => mutation.mutate(values)}
+      onSubmit={(values) => mutate(values)}
     >
       <Form className={css.form}>
         <div className={css.formGroup}>
@@ -69,7 +69,7 @@ const NoteForm = ({ onClose }: NoteFormProps) => {
           <button type="button" className={css.cancelButton} onClick={onClose}>
             Cancel
           </button>
-          <button type="submit" className={css.submitButton} disabled={mutation.isLoading}>
+          <button type="submit" className={css.submitButton} disabled={isLoading}>
             Create note
           </button>
         </div>
