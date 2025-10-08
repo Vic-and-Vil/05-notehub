@@ -35,8 +35,8 @@ const App: React.FC = () => {
         <SearchBox value={search} onChange={setSearch} />
         {data && data.totalPages > 1 && (
           <Pagination
-            currentPage={page}             // <-- poprawione
-            totalPages={data.totalPages}   // <-- poprawione
+            currentPage={page}
+            totalPages={data.totalPages}
             onPageChange={setPage}
           />
         )}
