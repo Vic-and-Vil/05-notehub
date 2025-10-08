@@ -32,7 +32,12 @@ export const createNote = async (note: Omit<Note, 'id' | 'createdAt'>): Promise<
   return response.data;
 };
 
-export const deleteNote = async (id: string): Promise<{ id: string }> => {
-  const response: AxiosResponse<{ id: string }> = await axiosInstance.delete(`/notes/${id}`);
-  return response.data;
+// export const deleteNote = async (id: string): Promise<{ id: string }> => {
+//   const response: AxiosResponse<{ id: string }> = await axiosInstance.delete(`/notes/${id}`);
+//   return response.data;
+// };
+export const deleteNote = async (id: string): Promise<Note> => {
+  const response: AxiosResponse<Note> = await api.delete(`/${id}`);
+  return response.data; // teraz zwraca pełną notatkę
 };
+

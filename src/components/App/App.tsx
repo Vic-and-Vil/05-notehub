@@ -19,6 +19,8 @@ const App = () => {
   const { data, isLoading, error } = useQuery({
     queryKey: ['notes', page, debouncedSearch],
     queryFn: () => fetchNotes({ page, perPage: 12, search: debouncedSearch }),
+  keepPreviousData: true,          // zachowuje poprzednie dane przy przeładowaniu
+  placeholderData: { data: [], totalPages: 1, page: 1, perPage: 12, total: 0 }, // zapobiega undefined
   });
 
   return (
