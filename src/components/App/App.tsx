@@ -16,7 +16,8 @@ const App: React.FC = () => {
 
   const debouncedSearch = useDebounce(search, 500);
 
-  const { data, isLoading } = useQuery<FetchNotesResponse>({
+  // ✅ Poprawione użycie useQuery z generykami i opcjami
+  const { data, isLoading } = useQuery<FetchNotesResponse, Error>({
     queryKey: ['notes', page, debouncedSearch],
     queryFn: () => fetchNotes(page, 12, debouncedSearch),
     keepPreviousData: true,
@@ -33,20 +34,25 @@ const App: React.FC = () => {
     <div className={css.app}>
       <header className={css.toolbar}>
         <SearchBox value={search} onChange={setSearch} />
-        {data && data.totalPages > 1 && (
+
+        {/* Paginacja tylko jeśli jest więcej niż 1 strona */}
+        {data?.totalPages && data.totalPages > 1 && (
           <Pagination
             currentPage={page}
             totalPages={data.totalPages}
             onPageChange={setPage}
           />
         )}
+
         <button className={css.button} onClick={() => setIsModalOpen(true)}>
           Create note +
         </button>
       </header>
 
-      {!isLoading && data && data.data.length > 0 && <NoteList notes={data.data} />}
+      {/* Lista notatek */}
+      {!isLoading && data?.data.length ? <NoteList notes={data.data} /> : null}
 
+      {/* Modal */}
       {isModalOpen && (
         <Modal onClose={() => setIsModalOpen(false)}>
           <NoteForm onClose={() => setIsModalOpen(false)} />
