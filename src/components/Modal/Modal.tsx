@@ -1,27 +1,36 @@
-import { type ReactNode, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import css from './Modal.module.css';
+import React, { useEffect } from 'react'
+import ReactDOM from 'react-dom'
+import css from './Modal.module.css'
 
 interface ModalProps {
-  children: ReactNode;
-  onClose: () => void;
+  children: React.ReactNode
+  onClose: () => void
 }
 
-const Modal = ({ children, onClose }: ModalProps) => {
+const Modal: React.FC<ModalProps> = ({ children, onClose }) => {
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
-  }, [onClose]);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
 
-  return createPortal(
-    <div className={css.backdrop} role="dialog" aria-modal="true" onClick={onClose}>
-      <div className={css.modal} onClick={e => e.stopPropagation()}>
-        {children}
-      </div>
-    </div>,
-    document.body
-  );
-};
+  const content = (
+    <div
+      className={css.backdrop}
+      role="dialog"
+      aria-modal="true"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
+    >
+      <div className={css.modal}>{children}</div>
+    </div>
+  )
 
-export default Modal;
+  const el = document.getElementById('modal-root') || document.body
+  return ReactDOM.createPortal(content, el)
+}
+
+export default Modal
