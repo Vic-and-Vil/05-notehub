@@ -16,20 +16,19 @@ const App: React.FC = () => {
 
   const debouncedSearch = useDebounce(search, 500);
 
-  // ✅ TanStack Query v5
-  const { data, isLoading } = useQuery<FetchNotesResponse, Error>({
+  const { data, isLoading } = useQuery<FetchNotesResponse>({
     queryKey: ['notes', page, debouncedSearch],
     queryFn: () => fetchNotes(page, 12, debouncedSearch),
+    staleTime: 3000,
     placeholderData: {
       notes: [],
       totalPages: 1,
     },
-    keepPreviousData: true,
   });
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
-    setPage(1); // ✅ resetowanie paginacji po zmianie wyszukiwania
+    setPage(1);
   };
 
   return (
@@ -37,7 +36,7 @@ const App: React.FC = () => {
       <header className={css.toolbar}>
         <SearchBox value={search} onChange={handleSearchChange} />
 
-        {data?.totalPages && data.totalPages > 1 && (
+        {data && data.totalPages > 1 && (
           <Pagination
             currentPage={page}
             totalPages={data.totalPages}

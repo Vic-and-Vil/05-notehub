@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 import type { Note } from '../types/note';
 
@@ -19,16 +20,14 @@ export const fetchNotes = async (
   search: string
 ): Promise<FetchNotesResponse> => {
   const { data } = await api.get<FetchNotesResponse>('/notes', {
-    params: {
-      page,
-      perPage,
-      search,
-    },
+    params: { page, perPage, search },
   });
   return data;
 };
 
-export const createNote = async (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>): Promise<Note> => {
+export const createNote = async (
+  note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<Note> => {
   const { data } = await api.post<Note>('/notes', note);
   return data;
 };
