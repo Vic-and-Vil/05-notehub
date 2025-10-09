@@ -17,25 +17,33 @@ const App: React.FC = () => {
   const [search, setSearch] = useState('');
   const [debouncedSearch] = useDebounce(search, 500);
 
-  const { data, isLoading } = useQuery<FetchNotesResponse>({
+  const { data, isLoading } = useQuery<FetchNotesResponse, Error>({
     queryKey: ['notes', page, debouncedSearch],
     queryFn: () => fetchNotes({ page, perPage: PER_PAGE, search: debouncedSearch }),
-    keepPreviousData: true,
+    keepPreviousData: true as any, // v5: TS вимоги
   });
 
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
-        <SearchBox search={search} onChange={(value) => { setSearch(value); setPage(1); }} />
-        <button className={css.button} onClick={() => setIsModalOpen(true)}>Create note +</button>
-        {data?.totalPages > 1 && (
+        <SearchBox
+          search={search}
+          onChange={(value) => {
+            setSearch(value);
+            setPage(1);
+          }}
+        />
+        <button className={css.button} onClick={() => setIsModalOpen(true)}>
+          Create note +
+        </button>
+        {data?.totalPages && data.totalPages > 1 && (
           <Pagination currentPage={page} totalPages={data.totalPages} onPageChange={setPage} />
         )}
       </header>
 
       {isLoading && <p>Loading...</p>}
 
-      {data && <NoteList notes={data.notes} />}
+      {data?.notes && <NoteList notes={data.notes} />}
 
       {isModalOpen && (
         <Modal onClose={() => setIsModalOpen(false)}>

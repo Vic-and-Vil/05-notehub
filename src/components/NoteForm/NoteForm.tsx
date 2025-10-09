@@ -2,11 +2,17 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { NoteTag } from '../../types/note';
-import { createNote, type FetchNotesResponse } from '../../services/noteService';
+import { createNote } from '../../services/noteService';
 import css from './NoteForm.module.css';
 
 interface NoteFormProps {
   onClose: () => void;
+}
+
+interface CreateNoteParams {
+  title: string;
+  content: string;
+  tag: NoteTag;
 }
 
 const validationSchema = Yup.object({
@@ -27,7 +33,7 @@ const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
     },
   });
 
-  const formik = useFormik<{ title: string; content: string; tag: NoteTag }>({
+  const formik = useFormik<CreateNoteParams>({
     initialValues: { title: '', content: '', tag: 'Todo' },
     validationSchema,
     onSubmit: (values) => mutation.mutate(values),
@@ -43,7 +49,14 @@ const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
 
       <div className={css.formGroup}>
         <label htmlFor="content">Content</label>
-        <textarea id="content" name="content" rows={8} value={formik.values.content} onChange={formik.handleChange} className={css.textarea} />
+        <textarea
+          id="content"
+          name="content"
+          rows={8}
+          value={formik.values.content}
+          onChange={formik.handleChange}
+          className={css.textarea}
+        />
         {formik.errors.content && <span className={css.error}>{formik.errors.content}</span>}
       </div>
 
@@ -63,8 +76,8 @@ const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
         <button type="button" className={css.cancelButton} onClick={onClose}>
           Cancel
         </button>
-        <button type="submit" className={css.submitButton} disabled={mutation.isLoading}>
-          {mutation.isLoading ? 'Creating...' : 'Create note'}
+        <button type="submit" className={css.submitButton} disabled={mutation.isPending}>
+          {mutation.isPending ? 'Creating...' : 'Create note'}
         </button>
       </div>
     </form>
