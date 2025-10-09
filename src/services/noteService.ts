@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 import type { Note } from '../types/note';
-
+const BASE_URL = 'https://notehub-public.goit.study/api';
 const api = axios.create({
   baseURL: 'https://notehub-public.goit.study/api',
   headers: {
@@ -24,7 +24,20 @@ export const fetchNotes = async (
   });
   return data;
 };
+interface CreateNoteDto {
+  title: string;
+  content: string;
+  tag: 'work' | 'personal' | 'other';
+}
 
+export const createNote = async (data: CreateNoteDto) => {
+  const response = await axios.post(`${BASE_URL}/notes`, data, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  return response.data;
+};
 export const createNote = async (
   note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>
 ): Promise<Note> => {
