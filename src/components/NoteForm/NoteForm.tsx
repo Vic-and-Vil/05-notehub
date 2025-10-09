@@ -1,16 +1,21 @@
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createNote } from '../../services/noteService';
 import type { NoteTag } from '../../types/note';
+import { createNote, type FetchNotesResponse } from '../../services/noteService';
+import css from './NoteForm.module.css';
+
+interface NoteFormProps {
+  onClose: () => void;
+}
 
 const validationSchema = Yup.object({
-  title: Yup.string().required('Title is required'),
-  content: Yup.string().required('Content is required'),
-  tag: Yup.mixed<NoteTag>().oneOf(['work', 'personal', 'other']).required(),
+  title: Yup.string().min(3).max(50).required('Title is required'),
+  content: Yup.string().max(500, 'Max 500 characters').required('Content is required'),
+  tag: Yup.mixed<NoteTag>().oneOf(['Todo', 'Work', 'Personal', 'Meeting', 'Shopping']).required(),
 });
 
-export default function NoteForm() {
+const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -18,57 +23,52 @@ export default function NoteForm() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
       formik.resetForm();
+      onClose();
     },
   });
 
-  const formik = useFormik<{
-    title: string;
-    content: string;
-    tag: NoteTag;
-  }>({
-    initialValues: {
-      title: '',
-      content: '',
-      tag: 'work', // wartość domyślna
-    },
+  const formik = useFormik<{ title: string; content: string; tag: NoteTag }>({
+    initialValues: { title: '', content: '', tag: 'Todo' },
     validationSchema,
-    onSubmit: values => {
-      mutation.mutate(values);
-    },
+    onSubmit: (values) => mutation.mutate(values),
   });
 
   return (
-    <form onSubmit={formik.handleSubmit}>
-      <input
-        name="title"
-        value={formik.values.title}
-        onChange={formik.handleChange}
-        placeholder="Title"
-      />
-      {formik.errors.title && <div>{formik.errors.title}</div>}
+    <form onSubmit={formik.handleSubmit} className={css.form}>
+      <div className={css.formGroup}>
+        <label htmlFor="title">Title</label>
+        <input id="title" name="title" value={formik.values.title} onChange={formik.handleChange} className={css.input} />
+        {formik.errors.title && <span className={css.error}>{formik.errors.title}</span>}
+      </div>
 
-      <textarea
-        name="content"
-        value={formik.values.content}
-        onChange={formik.handleChange}
-        placeholder="Content"
-      />
-      {formik.errors.content && <div>{formik.errors.content}</div>}
+      <div className={css.formGroup}>
+        <label htmlFor="content">Content</label>
+        <textarea id="content" name="content" rows={8} value={formik.values.content} onChange={formik.handleChange} className={css.textarea} />
+        {formik.errors.content && <span className={css.error}>{formik.errors.content}</span>}
+      </div>
 
-      <select
-        name="tag"
-        value={formik.values.tag}
-        onChange={formik.handleChange}
-      >
-        <option value="work">Work</option>
-        <option value="personal">Personal</option>
-        <option value="other">Other</option>
-      </select>
-      {formik.errors.tag && <div>{formik.errors.tag}</div>}
+      <div className={css.formGroup}>
+        <label htmlFor="tag">Tag</label>
+        <select id="tag" name="tag" value={formik.values.tag} onChange={formik.handleChange} className={css.select}>
+          <option value="Todo">Todo</option>
+          <option value="Work">Work</option>
+          <option value="Personal">Personal</option>
+          <option value="Meeting">Meeting</option>
+          <option value="Shopping">Shopping</option>
+        </select>
+        {formik.errors.tag && <span className={css.error}>{formik.errors.tag}</span>}
+      </div>
 
-      <button type="submit" disabled={mutation.isPending}>
-        {mutation.isPending ? 'Creating...' : 'Create'}
-      </button>
+      <div className={css.actions}>
+        <button type="button" className={css.cancelButton} onClick={onClose}>
+          Cancel
+        </button>
+        <button type="submit" className={css.submitButton} disabled={mutation.isLoading}>
+          {mutation.isLoading ? 'Creating...' : 'Create note'}
+        </button>
+      </div>
     </form>
   );
-}
+};
+
+export default NoteForm;

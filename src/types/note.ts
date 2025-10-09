@@ -1,9 +1,9 @@
-export type NoteTag = 'home' | 'work' | 'personal' | 'study' | 'other';
+export type NoteTag = 'Todo' | 'Work' | 'Personal' | 'Meeting' | 'Shopping';
 
 export interface Note {
-  id: string; // ✅ poprawione z _id
+  id: string;
   title: string;
-  content: string; // ✅ teraz obowiązkowe pole
+  content: string;
   tag: NoteTag;
   createdAt: string;
   updatedAt: string;
