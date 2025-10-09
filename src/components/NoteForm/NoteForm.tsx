@@ -18,7 +18,7 @@ interface CreateNoteParams {
 const validationSchema = Yup.object({
   title: Yup.string().min(3).max(50).required('Title is required'),
   content: Yup.string().max(500, 'Max 500 characters').required('Content is required'),
-  tag: Yup.mixed<NoteTag>().oneOf(['Todo', 'Work', 'Personal', 'Meeting', 'Shopping']).required(),
+  tag: Yup.mixed<NoteTag>().oneOf(['Todo','Work','Personal','Meeting','Shopping']).required(),
 });
 
 const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
@@ -43,20 +43,13 @@ const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
     <form onSubmit={formik.handleSubmit} className={css.form}>
       <div className={css.formGroup}>
         <label htmlFor="title">Title</label>
-        <input id="title" name="title" value={formik.values.title} onChange={formik.handleChange} className={css.input} />
+        <input id="title" name="title" value={formik.values.title} onChange={formik.handleChange} className={css.input}/>
         {formik.errors.title && <span className={css.error}>{formik.errors.title}</span>}
       </div>
 
       <div className={css.formGroup}>
         <label htmlFor="content">Content</label>
-        <textarea
-          id="content"
-          name="content"
-          rows={8}
-          value={formik.values.content}
-          onChange={formik.handleChange}
-          className={css.textarea}
-        />
+        <textarea id="content" name="content" rows={8} value={formik.values.content} onChange={formik.handleChange} className={css.textarea}/>
         {formik.errors.content && <span className={css.error}>{formik.errors.content}</span>}
       </div>
 
@@ -73,9 +66,7 @@ const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
       </div>
 
       <div className={css.actions}>
-        <button type="button" className={css.cancelButton} onClick={onClose}>
-          Cancel
-        </button>
+        <button type="button" className={css.cancelButton} onClick={onClose}>Cancel</button>
         <button type="submit" className={css.submitButton} disabled={mutation.isPending}>
           {mutation.isPending ? 'Creating...' : 'Create note'}
         </button>

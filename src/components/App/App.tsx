@@ -20,22 +20,13 @@ const App: React.FC = () => {
   const { data, isLoading } = useQuery<FetchNotesResponse, Error>({
     queryKey: ['notes', page, debouncedSearch],
     queryFn: () => fetchNotes({ page, perPage: PER_PAGE, search: debouncedSearch }),
-    keepPreviousData: true as any, // v5: TS вимоги
   });
 
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
-        <SearchBox
-          search={search}
-          onChange={(value) => {
-            setSearch(value);
-            setPage(1);
-          }}
-        />
-        <button className={css.button} onClick={() => setIsModalOpen(true)}>
-          Create note +
-        </button>
+        <SearchBox search={search} onChange={(value) => { setSearch(value); setPage(1); }} />
+        <button className={css.button} onClick={() => setIsModalOpen(true)}>Create note +</button>
         {data?.totalPages && data.totalPages > 1 && (
           <Pagination currentPage={page} totalPages={data.totalPages} onPageChange={setPage} />
         )}
@@ -43,7 +34,7 @@ const App: React.FC = () => {
 
       {isLoading && <p>Loading...</p>}
 
-      {data?.notes && <NoteList notes={data.notes} />}
+      {data?.notes?.length ? <NoteList notes={data.notes} /> : <p>No notes found</p>}
 
       {isModalOpen && (
         <Modal onClose={() => setIsModalOpen(false)}>

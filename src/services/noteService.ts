@@ -1,14 +1,13 @@
 import axios from 'axios';
 import type { Note, NoteTag } from '../types/note';
 
-const BASE_URL = 'https://notehub-public.goit.study/api';
+const API_URL = 'https://notehub-public.goit.study/api';
 const TOKEN = import.meta.env.VITE_NOTEHUB_TOKEN;
 
 const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: API_URL,
   headers: {
     Authorization: `Bearer ${TOKEN}`,
-    'Content-Type': 'application/json',
   },
 });
 
@@ -23,23 +22,29 @@ export interface FetchNotesResponse {
   totalPages: number;
 }
 
-export const fetchNotes = async (params: FetchNotesParams = {}): Promise<FetchNotesResponse> => {
-  const { data } = await api.get('/notes', { params });
-  return data;
-};
-
 export interface CreateNoteParams {
   title: string;
   content: string;
   tag: NoteTag;
 }
 
-export const createNote = async (note: CreateNoteParams): Promise<Note> => {
-  const { data } = await api.post('/notes', note);
-  return data;
-};
+// Pobranie listy notatek z paginacją i wyszukiwaniem
+export async function fetchNotes(params: FetchNotesParams = {}): Promise<FetchNotesResponse> {
+  const { page = 1, perPage = 12, search = '' } = params;
+  const response = await api.get<FetchNotesResponse>('/notes', {
+    params: { page, perPage, search },
+  });
+  return response.data;
+}
 
-export const deleteNote = async (id: string): Promise<Note> => {
-  const { data } = await api.delete(`/notes/${id}`);
-  return data;
-};
+// Tworzenie nowej notatki
+export async function createNote(data: CreateNoteParams): Promise<Note> {
+  const response = await api.post<Note>('/notes', data);
+  return response.data;
+}
+
+// Usuwanie notatki
+export async function deleteNote(id: string): Promise<Note> {
+  const response = await api.delete<Note>(`/notes/${id}`);
+  return response.data;
+}
