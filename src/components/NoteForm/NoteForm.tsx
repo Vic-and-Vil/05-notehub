@@ -1,51 +1,44 @@
-import React from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createNote } from '../../services/noteService';
-import type { Note } from '../../types/note';
-import css from './NoteForm.module.css';
 import type { NoteTag } from '../../types/note';
-
-interface NoteFormProps {
-  onClose: () => void;
-}
 
 const validationSchema = Yup.object({
   title: Yup.string().required('Title is required'),
   content: Yup.string().required('Content is required'),
-  tag: Yup.string().required('Tag is required'),
+  tag: Yup.mixed<NoteTag>().oneOf(['work', 'personal', 'other']).required(),
 });
 
-const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
+export default function NoteForm() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (values: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>) =>
-      createNote(values),
+    mutationFn: createNote,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
-      onClose();
+      formik.resetForm();
     },
   });
 
-  const formik = useFormik({
+  const formik = useFormik<{
+    title: string;
+    content: string;
+    tag: NoteTag;
+  }>({
     initialValues: {
       title: '',
       content: '',
-      tag: 'work',
+      tag: 'work', // wartość domyślna
     },
     validationSchema,
     onSubmit: values => {
-      mutation.mutate({
-  ...values,
-  tag: values.tag as NoteTag,
-});
+      mutation.mutate(values);
     },
   });
 
   return (
-    <form onSubmit={formik.handleSubmit} className={css.form}>
+    <form onSubmit={formik.handleSubmit}>
       <input
         name="title"
         value={formik.values.title}
@@ -69,13 +62,13 @@ const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
       >
         <option value="work">Work</option>
         <option value="personal">Personal</option>
-        <option value="study">Study</option>
+        <option value="other">Other</option>
       </select>
       {formik.errors.tag && <div>{formik.errors.tag}</div>}
 
-      <button type="submit">Create</button>
+      <button type="submit" disabled={mutation.isPending}>
+        {mutation.isPending ? 'Creating...' : 'Create'}
+      </button>
     </form>
   );
-};
-
-export default NoteForm;
+}
