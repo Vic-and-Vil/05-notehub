@@ -1,5 +1,6 @@
-import css from "./Loader.module.css";
-export interface LoaderProps {}
-export default function Loader() {
-  return <p className={css.text}>Loading movies, please wait...</p>;
-}
+import React from 'react'
+import css from './Loader.module.css'
+
+const Loader: React.FC = () => <div className={css.spinner}>Loading...</div>
+
+export default Loader

@@ -1,53 +1,60 @@
-import { useState } from 'react';
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
-import { fetchNotes } from '../../services/noteService';
-import NoteList from '../NoteList/NoteList';
-import NoteForm from '../NoteForm/NoteForm';
-import Modal from '../Modal/Modal';
-import Pagination from '../Pagination/Pagination';
-import SearchBox from '../SearchBox/SearchBox';
-import { useDebounce } from '../utils/useDebounce';
-import css from './App.module.css';
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useDebounce } from 'use-debounce'
+import { fetchNotes } from '../../services/noteService'
+import SearchBox from '../SearchBox/SearchBox'
+import Pagination from '../Pagination/Pagination'
+import NoteList from '../NoteList/NoteList'
+import Modal from '../Modal/Modal'
+import NoteForm from '../NoteForm/NoteForm'
+import css from './App.module.css'
 
-export default function App() {
-  const [page, setPage] = useState(1);
-  const [query, setQuery] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const debouncedQuery = useDebounce(query, 500);
+const PER_PAGE = 12
+
+const App = () => {
+  const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
+  const [debouncedSearch] = useDebounce(search, 500)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['notes', page, debouncedQuery],
-    queryFn: () => fetchNotes(page, 12, debouncedQuery),
-    placeholderData: keepPreviousData,
-  });
+    queryKey: ['notes', { page, perPage: PER_PAGE, search: debouncedSearch }],
+    queryFn: () =>
+      fetchNotes({ page, perPage: PER_PAGE, search: debouncedSearch }),
+    placeholderData: (prev) => prev, // аналог keepPreviousData
+  })
 
-  if (isLoading) return <p>Loading...</p>;
-  if (isError) return <p>Error loading notes</p>;
+  const total = data?.total ?? 0
+  const pageCount = Math.ceil(total / PER_PAGE)
 
   return (
-    <div className={css.container}>
-      <header className={css.header}>
-        <h1>NoteHub</h1>
-        <button onClick={() => setIsModalOpen(true)}>+ Create Note</button>
-      </header>
+    <div className={css.app}>
+      <header className={css.toolbar}>
+        <SearchBox value={search} onChange={setSearch} />
 
-      <SearchBox value={query} onChange={(val) => {
-        setQuery(val);
-        setPage(1); // reset przy wyszukiwaniu
-      }} />
-
-      {data?.notes.length ? (
-        <>
-          <NoteList notes={data.notes} />
+        {pageCount > 1 && (
           <Pagination
+            pageCount={pageCount}
             currentPage={page}
-            totalPages={data.totalPages}
             onPageChange={setPage}
           />
-        </>
-      ) : (
-        <p>No notes found</p>
-      )}
+        )}
+
+        <button className={css.createButton} onClick={() => setIsModalOpen(true)}>
+          Create note +
+        </button>
+      </header>
+
+      <main>
+        {isLoading && <p>Loading...</p>}
+        {isError && <p>Помилка при завантаженні нотаток.</p>}
+
+        {Array.isArray(data?.data) && data.data.length > 0 ? (
+          <NoteList notes={data.data} />
+        ) : (
+          !isLoading && <p>No notes yet.</p>
+        )}
+      </main>
 
       {isModalOpen && (
         <Modal onClose={() => setIsModalOpen(false)}>
@@ -55,5 +62,7 @@ export default function App() {
         </Modal>
       )}
     </div>
-  );
+  )
 }
+
+export default App
